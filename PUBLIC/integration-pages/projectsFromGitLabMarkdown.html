@@ -1,0 +1,33 @@
+<script>window.jQuery || document.write('<script src="/modules/3rd-party/jquery-3.4.0.min.js"><\/script>')</script>
+<script>$().modal || document.write('<script src="/modules/3rd-party/bootstrap.min.js"><\/script> <link rel="stylesheet" href="/modules/3rd-party/bootstrap.min.css"><\/link>')</script>
+<script src="/modules/3rd-party/showdown.min.js"></script>
+<script src="/modules/3rd-party/less.min.js"></script>
+<script src="/modules/OliveUtils.js"></script>
+<script src="/modules/newLayout_grid.js"></script>
+<script src="/modules/newProjectsOverviewUI_v3.js"></script>
+<script src="/modules/newProjectContentUI.js"></script>
+<script src="/modules/newProjectsFromGitLabMarkdownUI.js"></script>
+<div id="olive_content"> </div>
+<script>
+var CONFIG = this.CONFIG || {};
+CONFIG.mscEndpoint ||= 'https://adoxx.org/micro-service-controller-rest/rest/'; // 'http://127.0.0.1:8080/micro-service-controller-rest/rest/';
+CONFIG.microserviceId ||= '3e2cd06a-161c-409a-8966-e7b1ea4c336c';
+CONFIG.numColumns ||= 4;
+CONFIG.title ||= 'Projects';
+
+// you can choose between the following configuration parameters:
+CONFIG.gitlabUrl ||= 'https://git.boc-group.eu'; // https://git.boc-group.eu   https://gitlab.dke.univie.ac.at/
+CONFIG.gitlabGroupId ||= '78';                   // 78                         484
+CONFIG.gitlabGroupPage ||= 'https://git.boc-group.eu/uc-km-2020';
+// or
+//CONFIG.gitlabUrl ||= 'https://git.boc-group.eu';
+//CONFIG.gitlabProjectId ||= '186';
+//CONFIG.gitlabProjectFolder ||= 'Experiments'; //Possible values: Experiments, Physical Objects, Software
+// or
+//CONFIG.jsonUrl ||= 'http://127.0.0.1:5500/integration-pages/projects.json';
+
+var markdown2Projects = OliveUI.modules.newProjectsFromGitLabMarkdownUI(CONFIG);
+$('#olive_content').empty().append(
+  markdown2Projects.render()
+);
+</script>

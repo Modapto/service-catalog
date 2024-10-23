@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>MODAPTO Service Catalogue</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="MODAPTO Service Catalogue">
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+        integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+
+        #header {
+            padding: 0.5em 0 0.5em 0;
+            /* background-color: #eff9ff; */
+            background-color: #fff;
+        }
+
+        #headertitle {
+            font-size: 2em;
+            /* margin: 10px 0; */
+            margin: 0.8em 0;
+        }
+
+        .navbar-default {
+            /* background-color: #eff9ff; */
+            /* background-color: #337ab7; */
+            background-color: #4b8dc5;
+            /* border: none; */
+            border-bottom: 5px solid #2d5f8a;
+            z-index: 101;
+        }
+
+        .navbar {
+            border-radius: 0;
+            margin: 0;
+            /* position: fixed; */
+            width: 100%;
+            top: 0;
+            z-index: 55;
+        }
+
+        @media screen and (min-width: 1430px){
+            .container{
+                width: 1400px;
+            }
+        }
+/*
+        .container {
+            width: 100%;
+        }
+*/
+        .navbar-default .navbar-toggle .icon-bar {
+            background-color: #fff;
+        }
+
+        .navbar-default .navbar-nav>li>a:link,
+        .navbar-default .navbar-nav>li>a:visited,
+        .navbar-default .navbar-nav>li>a:hover,
+        .navbar-default .navbar-nav>li>a:active,
+        .navbar-default .navbar-nav>li>a:focus,
+        .navbar-default .navbar-nav>.open>a,
+        .navbar-default .navbar-nav>.open>a:hover,
+        .navbar-default .navbar-nav>.open>a:focus {
+            /* color: #292929; */
+            color: #fff;
+        }
+
+        body {
+            margin: 0 0 100px;
+            background-color: #fff;
+            color: #292929;
+            font-size: 14px;
+        }
+
+        #footer {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            min-height: 100px;
+            width: 100%;
+            background-color: #eff9ff;
+            padding-top: 1em;
+        }
+        .rec {
+            background: red;
+            border-radius: 50%;
+            width: 1rem;
+            aspect-ratio: 1/1;
+        }
+        .Blink {
+            animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;  
+        }
+        @keyframes blinker {  
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <!--[if IE]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+    <![endif]-->
+
+    <div id="header" class="container-fluid">
+        <img style="max-height: 50px; float: left; margin: 1em;" src="./img/logo.png" alt="MODAPTO" title="MODAPTO" />
+        <h1 id="headertitle">Service Catalogue</h1>
+    </div>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button></div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li></li>
+                    <li><a href="#" onclick="showCatalogue();">Service Catalogue</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <p>&nbsp;</p>
+    <div>
+        <div id="content" class="container-fluid">
+    </div>
+    </div>
+
+    <div id="footer" class="footer container-fluid">
+        <!--
+        <div id="cookie-notification">
+            <p class="text-center">
+                <span class="small">This website uses cookies to improve user experience. By using our website you agree with the use of
+                    cookies.</span>&nbsp;<button class="btn btn-default btn-xs" type="button" data-toggle="modal"
+                    data-target="#cookieModal">Read more</button>&nbsp;<button onclick="agreeCookies()"
+                    class="btn btn-primary btn-xs" type="button">Agree</button>
+            </p>
+        </div>-->
+        <p class="small">This project has received funding from the European Union under grant agreement No101091996. <img style="float: right;" src="./img/EU.png" width="10%"></p>
+        <p class="small">BOC Products & Services AG (on behalf of MODAPTO Consortium). All rights reserved.</p>
+        <p class="small"><a href="#" data-toggle="modal" data-target="#imprintModal">IMPRINT</a></p>
+    </div>
+    <div class="modal fade" id="cookieModal" tabindex="-1" role="dialog" aria-labelledby="cookieModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" id="cookieModalLabel">Cookie information</h3>
+                </div>
+                <div class="modal-body">
+                    <h3>Cookies</h3>
+                    <p>To make this site work properly, we sometimes place small data files called cookies on your
+                        device.
+                        Most big websites do this too.</p>
+                    <h3>What are cookies?</h3>
+                    <p>A cookie is a small text file that a website saves on your computer or mobile device when you
+                        visit
+                        the site. It enables the website to remember your actions and preferences (such as login,
+                        language,
+                        font size and other display preferences) over a period of time, so you do not have to keep
+                        re-entering them whenever you come back to the site or browse from one page to another.</p>
+                    <h3>How do we use cookies?</h3>
+                    <p>Our page use cookies to:</p>
+                    <ul>
+                        <li>remember if you have agreed to our use of cookies</li>
+                        <li>remember admin menu decisions</li>
+                        <li>analyse user behaviour (via <a href="http://analytics.google.com"
+                                target="_blank">analytics.google.com</a>)</li>
+                    </ul>
+                    <h3>How to control cookies</h3>
+                    <p>You can control and/or delete cookies as you wish; for details, see <a
+                            href="http://aboutcookies.org" target="_blank">aboutcookies.org</a>. You can delete all
+                        cookies that are already on your
+                        computer and you can set most browsers to prevent them from being placed. If you do this,
+                        however,
+                        you may have to manually adjust some preferences every time you visit a site and some services
+                        and
+                        functionalities may not work.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imprintModal" tabindex="-1" role="dialog" aria-labelledby="imprintModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" id="imprintModalLabel">Imprint</h3>
+                </div>
+                <div class="modal-body">
+This website is organized by<br>
+<br>
+<b>BOC Products & Services AG (on behalf of MODAPTO Consortium)</b><br>
+Operngasse 20b<br>
+1040 Wien<br>
+Austria<br>
+<br>
+Tel.: +43-1-905 10 56-0<br>
+Fax.: +43-1-905 10 56-3007<br>
+Web: www.boc-group.com<br>
+<br>
+Court of Jurisdiction: Handelsgericht Vienna<br>
+Commercial Register Number: FN 135702m<br>
+VAT ID-Nr.: ATU 39218002<br>
+Member of the Wirtschaftskammer Vienna<br>
+<br>
+<b>Managing Director:</b><br>
+o. Univ. Prof. Dr. Dimitris Karagiannis<br>
+<br>
+<b>Copyright © BOC</b><br>
+All rights reserved.<br>
+The content of this document is copyrighted. The usage as well as changes, cutbacks, enhancements and amendments need to be agreed by BOC, Vienna, in writing. Every duplication is only allowed in condition that the note of copyright will still exist on the document. Every publication or every translation is subject to a written acceptance by BOC, Vienna.<br>
+<br>
+<b>Trademarks</b><br>
+BOC, the BOC logo and all products, product names and product logos of BOC are registered trademarks of BOC Information Technologies Consulting AG. © BOC Information Technologies Consulting AG 1996-2013 All rights reserved.<br>
+<br>
+All other trademarks are property of the particular owner.<br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+        integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous">
+    </script>-->
+    <script src="./js/jquery-3.3.1.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script>
+        var CONFIG = {
+                mscEndpoint: 'https://innovation-laboratory.org/micro-service-controller-rest/rest/',
+                microserviceId: '3e2cd06a-161c-409a-8966-e7b1ea4c336c',
+                //numColumns: 4,
+                title: 'MODAPTO Smart Services Catalogue',
+                gitlabUrl: 'https://git.boc-group.eu',
+                gitlabGroupId: '700',
+                gitlabGroupPage: 'https://git.boc-group.eu/olive/modapto-smart-services'
+            };
+
+        function showCatalogue() {
+            $( "#content" ).empty().load( "../../integration-pages/projectsFromGitLabMarkdown.html");
+        }
+        
+
+        showCatalogue();
+
+
+        function isCookieAgree() {
+            if (!readCookie('cookiesagreed')) {
+                $('#cookie-notification').show();
+            }
+        }
+
+        function agreeCookies() {
+            createCookie('cookiesagreed', 'true', 365 * 4);
+            $('#cookie-notification').hide();
+        }
+
+        function createCookie(name, value, days) {
+            var expires;
+
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toGMTString();
+            } else {
+                expires = "";
+            }
+            document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+        }
+    </script>
+</body>
+
+</html>
