@@ -2,7 +2,7 @@
 The project contain for the MODAPTO Service Catalog code
 
 ## Requirement
-- Orchestrator based on Microservice Controller deployed ([Manually](https://git.boc-group.eu/adoxx/microservice-controller-rest) or using [Docker](https://git.boc-group.eu/adoxx/microservice-controller-docker))
+- Orchestrator based on Microservice Controller deployed using [Docker](https://github.com/Modapto/orchestrator)
 - GitLab platform with rights to create Groups and Projects.
 
 ## Deploy
