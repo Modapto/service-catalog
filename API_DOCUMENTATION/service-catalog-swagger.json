@@ -1,0 +1,94 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API to retrieve an AAS Smart Service",
+    "description": "A service that provides external inputs, outputs, and REST details."
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "schemes": ["http"],
+  "paths": {
+    "/services/{id}": {
+      "get": {
+        "summary": "Retrive service id manifest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["external"]
+                },
+                "input": {
+                  "type": "object",
+                  "description": "AAS inputs key with JSON Schema"
+                },
+                "output": {
+                  "type": "object",
+                  "description": "AAS output JSON Schema"
+                },
+                "restDetails": {
+                  "type": "object",
+                  "properties": {
+                    "endpoint": {
+                      "type": "string",
+                      "pattern": "^https?://.*",
+                      "description": "Absolute or relative URL for the service"
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": ["GET", "POST", "PUT", "DELETE"]
+                    },
+                    "headers": {
+                      "type": "object",
+                      "properties": {
+                        "Content-Type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["Content-Type"]
+                    },
+                    "outputMapping": {
+                      "type": "object",
+                      "description": "Mapping output values"
+                    },
+                    "payload": {
+                      "type": "string",
+                      "description": "Payload structure with placeholders"
+                    }
+                  },
+                  "required": ["endpoint", "method", "headers"]
+                }
+              },
+              "required": ["type", "input", "output", "rest-details"]
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {}
+}
