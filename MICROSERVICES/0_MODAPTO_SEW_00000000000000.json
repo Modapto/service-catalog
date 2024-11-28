@@ -1,0 +1,70 @@
+{
+  "id": "",
+  "name": "MODAPTO SEW Data Connectors",
+  "description": "MODAPTO SEW Data Connectors",
+  "public": true,
+  "defaultOperationId": "sum",
+  "operations": {
+    "sum": {
+      "name": "sum",
+      "description": "sum",
+      "isDefault": true,
+      "autostart": false,
+      "configuration": {
+        "connectorId": "org.adoxx.microservice.api.connectors.impl.JavascriptEngineConnector",
+        "outputDescription": "",
+        "outputAdaptationAlgorithm": "",
+        "statusCheckAlgorithm": "",
+        "configStart": {},
+        "configCall": {
+          "algorithm": {
+            "value": "out({\n sum: $input + 2\n});"
+          }
+        },
+        "inputs": {
+          "input": {
+            "matchingName": "$input",
+            "description": "sum input",
+            "workingExample": "1"
+          }
+        }
+      }
+    },
+    "sum2": {
+      "name": "sum2",
+      "description": "another sum",
+      "isDefault": false,
+      "autostart": false,
+      "configuration": {
+        "connectorId": "org.adoxx.microservice.api.connectors.impl.JavascriptEngineConnector",
+        "outputDescription": "",
+        "outputAdaptationAlgorithm": "",
+        "statusCheckAlgorithm": "",
+        "configStart": {},
+        "configCall": {
+          "algorithm": {
+            "value": "out({\nsum: $a+$b\n});"
+          }
+        },
+        "inputs": {
+          "a": {
+            "matchingName": "$a",
+            "description": "first number",
+            "workingExample": "2"
+          },
+          "b": {
+            "matchingName": "$b",
+            "description": "second number",
+            "workingExample": "3"
+          }
+        }
+      }
+    }
+  },
+  "moreInfos": {
+    "ownerHtml": "<a href=\"http://www.adoxx.org\">ADOxx Team</a>",
+    "presentationImageUrl": "https://www.adoxx.org/live/image/layout_set_logo?img_id=179909&t=1521267871183",
+    "descriptionHtml": "<p>Hello World Microservice</p>",
+    "visible": true
+  }
+}
