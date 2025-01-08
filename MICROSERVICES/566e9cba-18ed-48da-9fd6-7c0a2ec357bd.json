@@ -1,0 +1,56 @@
+{
+  "id": "",
+  "name": "MODAPTO SERVICES",
+  "description": "MODAPTO SERVICES",
+  "public": true,
+  "defaultOperationId": "demo",
+  "operations": {
+    "demo": {
+      "name": "demo",
+      "description": "demo",
+      "isDefault": true,
+      "autostart": false,
+      "configuration": {
+        "connectorId": "org.adoxx.microservice.api.connectors.impl.RESTConnector",
+        "outputDescription": "description output",
+        "outputAdaptationAlgorithm": "",
+        "statusCheckAlgorithm": "",
+        "configStart": {
+          "method": {
+            "value": "GET"
+          },
+          "requestContentType": {
+            "value": "application/json"
+          },
+          "additionalHeaders": {
+            "value": "Accept: application/json"
+          }
+        },
+        "configCall": {
+          "endpoint": {
+            "value": "http://127.0.0.1"
+          },
+          "querystring": {
+            "value": ""
+          },
+          "postData": {
+            "value": "{\"data\":true}"
+          }
+        },
+        "inputs": {
+          "id": {
+            "matchingName": "${id}",
+            "description": "id",
+            "workingExample": ""
+          }
+        }
+      }
+    }
+  },
+  "moreInfos": {
+    "ownerHtml": "<a href=\"http://www.adoxx.org\">ADOxx Team</a>",
+    "presentationImageUrl": "https://www.adoxx.org/live/image/layout_set_logo?img_id=179909&t=1521267871183",
+    "descriptionHtml": "<p>Hello World Microservice</p>",
+    "visible": true
+  }
+}

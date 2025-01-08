@@ -1,0 +1,916 @@
+<html class="no-js" lang="en" data-color-scheme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://matcha.mizu.sh/matcha.css">
+  <title>MODAPTO Service Catalogue</title>
+  <style>
+    article {
+      max-width: 27%;
+      min-width: 25%;
+      cursor: pointer;
+    }
+    img {
+      max-height: 150;
+      width: auto;
+      padding: 10px;
+    }
+    #gridDiv {
+      justify-content: space-between;
+      display: flex; 
+      flex-wrap: wrap;
+    }
+    dialog {
+      min-width: 50%;
+    }
+    dialog label {
+      width: 100%;
+    }
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+</head>
+<body id="body">
+<h1 style="text-align: center;">MODAPTO Service Catalogue</h1>
+<form>
+  <button id="addBtn" type="button">Add new service</button>
+  <button id="testBtn" type="button" style="display: none;">TEST</button>
+</form>
+<div id="gridDiv">
+</div>
+<br>
+<div id="msgDiv"></div>
+<script type="module">
+//const baseUrl = 'http://127.0.0.1:8080';
+const baseUrl = '..';
+
+
+/*
+Sample result:
+
+[{
+  "id": "",
+  "name": "",
+  "description_short": "",
+  "description_long": "",
+  "sources": "",
+  "logo": "",
+  "affiliation": "",
+  "contact": "",
+  "keywords": "",
+  "type": "embedded/internal/external",
+  
+  "fmu": "{base64encoded}",
+  
+  "container": {
+    "image": "",
+    "internalPort": 0
+  },
+  
+  "input": {
+    "name": {
+      "_comment": "JSONSchema"
+      "type": "string",
+      "description": ""
+    }
+  },
+  "output": {
+    "_comment": "JSONSchema"
+    "type": "object",
+    "description": "my output"
+  },
+  "restDetails": {
+    "_endpoint_comment": "relative URL for internal smart services, absolute URL for external smart services",
+    "endpoint": "http://example.org:8080/root/my-service/?name=${name}",
+    "method": "GET|POST|PUT|DELETE",
+    "headers": {
+      "Content-Type": "..."
+    },
+    "outputMapping": {
+      "x": "$.x",
+      "y": "$.y"
+    },
+    "payload": "{ \"otherValue\": 5, \"name\": \"${name}\"}",
+  }
+}]
+*/
+const getServicesList = () => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=getServicesList', {
+  method: 'POST',
+  body: `{}`,
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.list.sort((a,b)=>a.name.toUpperCase()>b.name.toUpperCase()?1:a.name.toUpperCase()<b.name.toUpperCase()?-1:0))).catch(e=>reject(e)));
+
+const getService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=getService', {
+  method: 'POST',
+  body: JSON.stringify({ id: { value: id } }),
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):(response.data.id=id, resolve(response.data))).catch(e=>reject(e)));
+
+const delService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/deleteLocalFile?fileId='+encodeURIComponent(id), {
+  method: 'GET',
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+
+
+const uploadService = ({ service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=uploadService', {
+  method: 'POST',
+  body: `{ "contentB64": { "value": "${btoa(JSON.stringify(service))}" } }`,
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.fileId)).catch(e=>reject(e)));
+
+const updateService = ({ id, service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateLocalFile?fileId='+encodeURIComponent(id), {
+  method: 'POST',
+  body: JSON.stringify(service),
+  headers: {
+    "Content-Type": "application/octet-stream",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+
+const getMSCService = (id) => new Promise((resolve, reject)=>fetch(`${baseUrl}/micro-service-controller-rest/rest/msc/retrieveMicroserviceConfiguration?microserviceId=${id || '566e9cba-18ed-48da-9fd6-7c0a2ec357bd'}`, {
+  method: 'GET',
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data)).catch(e=>reject(e)));
+
+const updateMSCService = ({ mscService }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateMicroservice?microserviceId=566e9cba-18ed-48da-9fd6-7c0a2ec357bd', {
+  method: 'POST',
+  body: JSON.stringify(mscService),
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+
+/*
+{
+    "service1": {
+        "name": "service1",
+        "description": "service1",
+        "isDefault": true,
+        "autostart": false,
+        "configuration": {
+            "connectorId": "org.adoxx.microservice.api.connectors.impl.RESTConnector",
+            "outputDescription": "description output",
+            "outputAdaptationAlgorithm": "",
+            "statusCheckAlgorithm": "",
+            "configStart": {
+                "method": {
+                    "value": "GET"
+                },
+                "requestContentType": {
+                    "value": "application/json"
+                },
+                "additionalHeaders": {
+                    "value": "Accept: application/json"
+                }
+            },
+            "configCall": {
+                "endpoint": {
+                    "value": "http://127.0.0.1"
+                },
+                "querystring": {
+                    "value": ""
+                },
+                "postData": {
+                    "value": "{\"data\":true}"
+                }
+            },
+            "inputs": {
+                "id": {
+                    "matchingName": "${id}",
+                    "description": "id",
+                    "workingExample": ""
+                }
+            }
+        }
+    }
+}
+*/
+const createMSCService = async ({ service }) => ({
+  [service.name]: {
+    name: service.name,
+    description: service.description_short,
+    isDefault: false,
+    autostart: false,
+    configuration: {
+      connectorId: 'org.adoxx.microservice.api.connectors.impl.RESTConnector',
+      outputDescription: service.output.description,
+      outputAdaptationAlgorithm: 'out(output.dataJson ? output.dataJson : output.dataText ? output.dataText : output.dataBase64);',
+      statusCheckAlgorithm: '',
+      configStart: {
+        method: {
+          value: service.restDetails.method
+        },
+        requestContentType: {
+          value: service.restDetails.headers['Content-Type'] ?? ''
+        },
+        additionalHeaders: {
+          value: Object.keys(service.restDetails.headers).map(key=>key==='Content-Type'?'':`${key}: ${service.restDetails.headers[key]}`).join('\n')
+        }
+      },
+      configCall: {
+        endpoint: {
+          value: service.restDetails.endpoint
+        },
+        querystring: {
+          value: ''
+        },
+        postData: {
+          value: service.restDetails.payload
+        }
+      },
+      inputs: Object.keys(service.input).reduce((acc, key)=>({...acc, [key]: {
+        matchingName: `\${${key}}`,
+        description: service.input[key].description,
+        workingExample: ''
+      }}), {})
+    }
+  }
+});
+
+const defaultIconSvg = '<svg width="150px" height="150px" viewBox="0 0 512.00 512.00" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" stroke="#000000"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g fill="#000000" transform="translate(64.000000, 64.000000)"><path d="M320,64 L320,320 L64,320 L64,64 L320,64 Z M171.749388,128 L146.817842,128 L99.4840387,256 L121.976629,256 L130.913039,230.977 L187.575039,230.977 L196.319607,256 L220.167172,256 L171.749388,128 Z M260.093778,128 L237.691519,128 L237.691519,256 L260.093778,256 L260.093778,128 Z M159.094727,149.47526 L181.409039,213.333 L137.135039,213.333 L159.094727,149.47526 Z M341.333333,256 L384,256 L384,298.666667 L341.333333,298.666667 L341.333333,256 Z M85.3333333,341.333333 L128,341.333333 L128,384 L85.3333333,384 L85.3333333,341.333333 Z M170.666667,341.333333 L213.333333,341.333333 L213.333333,384 L170.666667,384 L170.666667,341.333333 Z M85.3333333,0 L128,0 L128,42.6666667 L85.3333333,42.6666667 L85.3333333,0 Z M256,341.333333 L298.666667,341.333333 L298.666667,384 L256,384 L256,341.333333 Z M170.666667,0 L213.333333,0 L213.333333,42.6666667 L170.666667,42.6666667 L170.666667,0 Z M256,0 L298.666667,0 L298.666667,42.6666667 L256,42.6666667 L256,0 Z M341.333333,170.666667 L384,170.666667 L384,213.333333 L341.333333,213.333333 L341.333333,170.666667 Z M0,256 L42.6666667,256 L42.6666667,298.666667 L0,298.666667 L0,256 Z M341.333333,85.3333333 L384,85.3333333 L384,128 L341.333333,128 L341.333333,85.3333333 Z M0,170.666667 L42.6666667,170.666667 L42.6666667,213.333333 L0,213.333333 L0,170.666667 Z M0,85.3333333 L42.6666667,85.3333333 L42.6666667,128 L0,128 L0,85.3333333 Z"></path></g></g></g></svg>';
+
+const showServices = async () => {
+  const services = await getServicesList();
+  const gridDiv = document.getElementById('gridDiv');
+  gridDiv.innerHTML = '';
+  services.forEach((service, i)=>{
+    const article = document.createElement('article');
+    article.title = service.description_short;
+    article.innerHTML = `
+      <header style="text-align: center;"><span id="del_${i}" style="cursor:pointer; float: left;" title="Delete">🗑</span><span id="edit_${i}" style="cursor:pointer; float: left;" title="Edit">⚙</span><b>${service.name}</b></header>
+      <div style="text-align: center;">${service.logo ? `<img loading="lazy" src="${service.logo}">`: `<!-- <img loading="lazy" src="https://git.boc-group.eu/uploads/-/system/project/avatar/400/AI.jpg"> --> ${defaultIconSvg}`}</div>
+      <p>${service.description_short.length < 100 ? service.description_short : service.description_short.substring(0, 100).concat('...')}</p>
+      <footer class="muted" style="text-align: center;">${service.affiliation}</footer>
+    `;
+    gridDiv.appendChild(article);
+    document.getElementById(`edit_${i}`).addEventListener('click', async e=>{
+      e.preventDefault();
+      try{
+        const serviceFull = await getService(service.id);
+        createFormModal(serviceFull);
+      } catch(err) {
+        console.log(err);
+        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+      }
+    });
+    document.getElementById(`del_${i}`).addEventListener('click', async e=>{
+      e.preventDefault();
+      if (!confirm(`Are you sure you want to delete the service ${service.name} ?`)) return;
+      try {
+        if (service.type !== 'embedded') {
+          const mscService = await getMSCService();
+          if (mscService.operations[service.name])
+            delete mscService.operations[service.name];
+          await updateMSCService({ mscService });
+        }
+        await delService(service.id);
+        await showServices();
+      } catch(err) {
+        console.log(err);
+        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+      }
+    });
+
+    article.addEventListener('click', async e=>{
+      if (e.target.tagName === 'SPAN') return;
+      e.preventDefault();
+      try{
+        const serviceFull = await getService(service.id);
+        createDetailsModal(serviceFull);
+      } catch(err) {
+        console.log(err);
+        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+      }
+    });
+  });
+};
+
+const createDetailsModal = service=>{
+  const modal = document.createElement('dialog');
+  modal.innerHTML = `
+  <header>
+    <h2>${service.name}</h2>
+  </header>
+  <div style="float: right">${service.logo ? `<img loading="lazy" src="${service.logo}">`: defaultIconSvg}</div>
+  <p>
+    <small>
+      <b>Type:</b> ${service.type}<br>
+      <b>Affiliation:</b> ${service.affiliation}<br>
+      <b>Contact:</b> ${service.contact}<br>
+      <b>Sources:</b> <a href="${service.sources}" target="_blank">${service.sources}</a><br>
+      <b>Keywords:</b> ${service.keywords}<br>
+      <b>Inputs:</b> ${Object.keys(service.input).map(key=>`${key} (${service.input[key].type})`).join(', ')}<br>
+      <b>Output:</b> ${service.output.type} - ${service.output.description}<br>
+    </small>
+  </p>
+  ${service.description_long}
+  <footer>
+    <form method="dialog">
+      <button type="reset" onclick="${ escapeHTML(`
+        event.preventDefault();
+        this.parentElement.parentElement.parentElement.remove();
+      `) }">Close</button>
+    </form>
+  </footer>
+  `;
+  document.body.appendChild(modal);
+  modal.showModal();
+  modal.addEventListener('cancel', e=>{
+    modal.remove();
+  });
+};
+
+const createFormModal = init=>{
+  const modal = document.createElement('dialog');
+  modal.innerHTML = `
+  <header>
+    <h2>${init?.id ? 'Edit' : 'Add'} Service in the Catalogue</h2>
+  </header>
+  <form id="form">
+    <label>
+      Name
+      <input id="nameEl" type="text" value="${init?.name ?? ''}" required>
+    </label>
+    <label>
+      Logo
+      <input id="logo" type="text" value="${init?.logo ?? ''}">
+    </label>
+    <label>
+      Short Description
+      <input id="description_short" type="text" value="${init?.description_short ?? ''}" required>
+    </label>
+    <label>
+      Long Description
+      <textarea id="description_long">${init?.description_long ?? ''}</textarea>
+    </label>
+    <label>
+      Sources
+      <input id="sources" type="text" value="${init?.sources ?? ''}">
+    </label>
+    <label>
+      Affiliation
+      <input id="affiliation" type="text" value="${init?.affiliation ?? ''}" required>
+    </label>
+    <label>
+      Contact
+      <input id="contact" type="text" value="${init?.contact ?? ''}" required>
+    </label>
+    <label>
+      Keywords
+      <input id="keywords" type="text" value="${init?.keywords ?? ''}" required>
+    </label>
+    <fieldset>
+      <legend>Inputs</legend>
+      <button onclick="${ escapeHTML(`
+        event.preventDefault();
+        const tr = document.createElement('tr');
+        tr.innerHTML = '${`
+          <td>
+            <input type="text" placeholder="Name" required>
+          </td>
+          <td>
+            <select required>
+              <option value="">--Select a Type--</option>
+              <option value="null">Null</option>
+              <option value="boolean">Boolean</option>
+              <option value="object">Object</option>
+              <option value="array">Array</option>
+              <option value="number">Number</option>
+              <option value="string">String</option>
+            </select>
+          </td>
+          <td>
+            <textarea placeholder="Description" rows="1" required></textarea>
+          <td>
+            <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+          </td>
+        `}';
+        inputsTbody.appendChild(tr);
+      `)}">Add Input</button>
+      <table>
+        <tbody id="inputsTbody">
+          ${Object.keys(init?.input ?? {}).map(key=>`
+            <tr>
+              <td>
+                <input type="text" value="${key}" required>
+              </td>
+              <td>
+                <select required>
+                  <option value="" ${init.input[key].type == null ? 'selected':''}>--Select a Type--</option>
+                  <option value="null" ${init.input[key].type === 'null' ? 'selected':''}>Null</option>
+                  <option value="boolean" ${init.input[key].type === 'boolean' ? 'selected':''}>Boolean</option>
+                  <option value="object" ${init.input[key].type === 'object' ? 'selected':''}>Object</option>
+                  <option value="array" ${init.input[key].type === 'array' ? 'selected':''}>Array</option>
+                  <option value="number" ${init.input[key].type === 'number' ? 'selected':''}>Number</option>
+                  <option value="string" ${init.input[key].type === 'string' ? 'selected':''}>String</option>
+                </select>
+              </td>
+              <td>
+                <textarea rows="1" required>${init.input[key].description ?? ''}</textarea>
+              </td>
+              <td>
+                <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </fieldset>
+    <fieldset>
+      <legend>Output</legend>
+      <label>
+        Type
+        <select id="outputType" required>
+          <option value="" ${init?.output?.type == null ? 'selected':''}>--Select a Type--</option>
+          <option value="null" ${init?.output?.type === 'null' ? 'selected':''}>Null</option>
+          <option value="boolean" ${init?.output?.type === 'boolean' ? 'selected':''}>Boolean</option>
+          <option value="object" ${init?.output?.type === 'object' ? 'selected':''}>Object</option>
+          <option value="array" ${init?.output?.type === 'array' ? 'selected':''}>Array</option>
+          <option value="number" ${init?.output?.type === 'number' ? 'selected':''}>Number</option>
+          <option value="string" ${init?.output?.type === 'string' ? 'selected':''}>String</option>
+        </select>
+      </label>
+      <label>
+        Description
+        <textarea id="outputDescription" required>${init?.output?.description ?? ''}</textarea>
+    </fieldset>
+    <label>
+      Type
+      <select id="type" required>
+        <option value="" ${init?.type == null ? 'selected':''}>--Select a Type--</option>
+        <option value="embedded" ${init?.type === 'embedded' ? 'selected':''}>Embedded</option>
+        <option value="internal" ${init?.type === 'internal' ? 'selected':''}>Internal</option>
+        <option value="external" ${init?.type === 'external' ? 'selected':''}>External</option>
+        <option value="orchestrated">Orchestrated</option>
+      </select>
+    </label>
+    <div id="typeFormDiv"></div>
+  </form>
+  <footer>
+    <form method="dialog">
+      <button id="submitBtn" type="submit">Submit</button>
+      <button id="cancelBtn" type="reset">Cancel</button>
+    </form>
+  </footer>
+  `;
+  document.body.appendChild(modal);
+  const editor = SUNEDITOR.create('description_long', {
+    display: 'block',
+    width: '100%',
+    height: 'auto',
+    popupDisplay: 'full',
+    charCounter: true,
+    charCounterLabel: 'Characters :',
+    buttonList: [
+        // default
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['paragraphStyle', 'blockquote'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['fontColor', 'hiliteColor', 'textStyle'],
+        ['removeFormat'],
+        ['outdent', 'indent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio'],
+        ['fullScreen', 'showBlocks', 'codeView'],
+        ['preview', 'print'],
+        ['save', 'template'],
+        // (min-width: 1546)
+        ['%1546', [
+            ['undo', 'redo'],
+            ['font', 'fontSize', 'formatBlock'],
+            ['paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+            ['fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['table', 'link', 'image', 'video', 'audio'],
+            ['fullScreen', 'showBlocks', 'codeView'],
+            ['-right', ':i-More Misc-default.more_vertical', 'preview', 'print', 'save', 'template']
+        ]],
+        // (min-width: 1455)
+        ['%1455', [
+            ['undo', 'redo'],
+            ['font', 'fontSize', 'formatBlock'],
+            ['paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+            ['fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['table', 'link', 'image', 'video', 'audio'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template']
+        ]],
+        // (min-width: 1326)
+        ['%1326', [
+            ['undo', 'redo'],
+            ['font', 'fontSize', 'formatBlock'],
+            ['paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+            ['fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template'],
+            ['-right', ':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio']
+        ]],
+        // (min-width: 1123)
+        ['%1123', [
+            ['undo', 'redo'],
+            [':p-More Paragraph-default.more_paragraph', 'font', 'fontSize', 'formatBlock', 'paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+            ['fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template'],
+            ['-right', ':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio']
+        ]],
+        // (min-width: 817)
+        ['%817', [
+            ['undo', 'redo'],
+            [':p-More Paragraph-default.more_paragraph', 'font', 'fontSize', 'formatBlock', 'paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike'],
+            [':t-More Text-default.more_text', 'subscript', 'superscript', 'fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template'],
+            ['-right', ':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio']
+        ]],
+        // (min-width: 673)
+        ['%673', [
+            ['undo', 'redo'],
+            [':p-More Paragraph-default.more_paragraph', 'font', 'fontSize', 'formatBlock', 'paragraphStyle', 'blockquote'],
+            [':t-More Text-default.more_text', 'bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            [':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template']
+        ]],
+        // (min-width: 525)
+        ['%525', [
+            ['undo', 'redo'],
+            [':p-More Paragraph-default.more_paragraph', 'font', 'fontSize', 'formatBlock', 'paragraphStyle', 'blockquote'],
+            [':t-More Text-default.more_text', 'bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            ['outdent', 'indent'],
+            [':e-More Line-default.more_horizontal', 'align', 'horizontalRule', 'list', 'lineHeight'],
+            [':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template']
+        ]],
+        // (min-width: 420)
+        ['%420', [
+            ['undo', 'redo'],
+            [':p-More Paragraph-default.more_paragraph', 'font', 'fontSize', 'formatBlock', 'paragraphStyle', 'blockquote'],
+            [':t-More Text-default.more_text', 'bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'fontColor', 'hiliteColor', 'textStyle', 'removeFormat'],
+            [':e-More Line-default.more_horizontal', 'outdent', 'indent', 'align', 'horizontalRule', 'list', 'lineHeight'],
+            [':r-More Rich-default.more_plus', 'table', 'link', 'image', 'video', 'audio'],
+            ['-right', ':i-More Misc-default.more_vertical', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print', 'save', 'template']
+        ]]
+    ],
+    placeholder: 'Add a complete description here...'
+  });
+
+  modal.showModal();
+  modal.addEventListener('cancel', e=>{
+    modal.remove();
+  });
+  submitBtn.addEventListener('click', async e=>{
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+
+
+    const service = {
+      id: init?.id ?? '',
+      name: nameEl.value,
+      description_short: description_short.value,
+      description_long: editor.getContents(), //description_long.value,
+      sources: sources.value,
+      logo: logo.value,
+      affiliation: affiliation.value,
+      contact: contact.value,
+      keywords: keywords.value,
+      type: type.value,
+      input: [...inputsTbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: {
+        type: tr.children[1].children[0].value,
+        description: tr.children[2].children[0].value
+      }}), {}),
+      output: {
+        type: outputType.value,
+        description: outputDescription.value
+      }
+    };
+    switch(type.value) {
+      case 'orchestrated':
+        service.type = 'external';
+        try {
+          const mscService = await getMSCService(microservice_id.value);
+          console.log(mscService);
+          if (!mscService.operations[microservice_operation.value]) throw new Error(`Operation ${microservice_operation.value} not found.`);
+          service.restDetails = {
+            endpoint: `${baseUrl}/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=${microservice_id.value}&operationId=${microservice_operation.value}`,
+            method: 'POST',
+            headers: {},
+            outputMapping: {},
+            payload: JSON.stringify(Object.keys(mscService.operations[microservice_operation.value].configuration.inputs).reduce((acc, key)=>({...acc, [key]: { value: '${'+key+'}'}}), {}))
+          };
+        } catch(err) {
+          console.log(err);
+          msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+        }
+        //service.microservice_id = microservice_id.value;
+        //service.microservice_operation = microservice_operation.value;
+        break;
+      case 'embedded':
+        service.fmu = btoa(fmu.value);
+        break;
+      case 'internal':
+        service.container = {
+          image: container_image.value,
+          internalPort: internal_port.value
+        };
+      case 'external':
+        service.restDetails = {
+          endpoint: rest_endpoint.value,
+          method: rest_method.value,
+          headers: [...rest_headers_tbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: tr.children[1].children[0].value}), {}),
+          outputMapping: [...output_mapping_tbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: tr.children[1].children[0].value}), {}),
+          payload: rest_payload.value
+        };
+        break;
+    }
+
+    console.log(service);
+    //if type is orchestrated then do not create a msc service
+    //HOW to orchestrate embedded fmu services? Currently skipped
+    try{
+      addBtn.disabled = true;
+      body.style.cursor = 'wait';
+      if (service.type !== 'orchestrated' && service.type !== 'embedded') {
+        const mscService = await getMSCService();
+        if (mscService.operations[service.name] && !init?.id) throw new Error('Service already exists. Use another Name.');
+        const mscServiceUpdate = await createMSCService({ service });
+        mscService.operations = Object.assign(mscService.operations, mscServiceUpdate);
+        await updateMSCService({ mscService });
+      }
+
+      if(init?.id) {
+        await updateService({id: init.id, service});
+      } else {
+        await uploadService({ service });
+      }
+
+      await showServices();
+
+    } catch(err) {
+      console.log(err);
+      msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+    } finally {
+      addBtn.disabled = false;
+      body.style.cursor = 'default';
+    }
+
+    modal.close();
+    modal.remove();
+  });
+  cancelBtn.addEventListener('click', async e=>{
+    modal.close();
+    modal.remove();
+  });
+  type.addEventListener('change', e=>{
+    typeFormDiv.innerHTML = '';
+    switch(type.value) {
+      case 'orchestrated':
+        typeFormDiv.innerHTML = `
+          <fieldset>
+            <legend>Orchestration Details</legend>
+            <label>
+              Microservice ID
+              <input id="microservice_id" type="text" required>
+            </label>
+            <label>
+              Microservice Operation
+              <input id="microservice_operation" type="text" required>
+            </label>
+          </fieldset>
+        `;
+        break;
+      case 'embedded':
+        typeFormDiv.innerHTML = `
+          <label>
+            FMU
+            <textarea id="fmu" required>${init?.fmu ? atob(init?.fmu) : ''}</textarea>
+          </label>
+        `;
+        break;
+      case 'internal':
+        typeFormDiv.innerHTML = `
+          <fieldset>
+            <legend>Docker Container Details</legend>
+            <label>
+              Container Image
+              <input id="container_image" type="text" value="${init?.container?.image ?? ''}" required>
+            </label>
+            <label>
+              Internal Port
+              <input id="internal_port" type="number" value="${init?.container?.internalPort ?? ''}" required>
+            </label>
+          </fieldset>
+        `;
+      case 'external':
+        typeFormDiv.innerHTML += `
+          <fieldset>
+            <legend>REST Details</legend>
+            <label>
+              REST Endpoint
+              <input id="rest_endpoint" type="text" value="${init?.restDetails?.endpoint ?? ''}" required>
+            </label>
+            <label>
+              REST Method
+              <select id="rest_method" required>
+                <option value="" ${init?.restDetails?.method == null ? 'selected':''}>--Select a Method--</option>
+                <option value="GET" ${init?.restDetails?.method === 'GET' ? 'selected':''}>GET</option>
+                <option value="POST" ${init?.restDetails?.method === 'POST' ? 'selected':''}>POST</option>
+                <option value="PUT" ${init?.restDetails?.method === 'PUT' ? 'selected':''}>PUT</option>
+                <option value="DELETE" ${init?.restDetails?.method === 'DELETE' ? 'selected':''}>DELETE</option>
+              </select>
+            </label>
+            <fieldset>
+              <legend>REST Headers</legend>
+              <button onclick="${ escapeHTML(`
+                event.preventDefault(); 
+                const tr = document.createElement('tr'); 
+                tr.innerHTML='${`
+                  <td>
+                    <input type="text" placeholder="Key" required>
+                  </td>
+                  <td>
+                    <input type="text" placeholder="Value" required>
+                  </td>
+                  <td>
+                    <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+                  </td>`}';
+                rest_headers_tbody.appendChild(tr);`) }">Add Header</button>
+              <table>
+                <tbody id="rest_headers_tbody">
+                  ${Object.keys(init?.restDetails?.headers ?? {}).map(key=>`
+                    <tr>
+                      <td>
+                        <input type="text" value="${key}" required>
+                      </td>
+                      <td>
+                        <input type="text" value="${init.restDetails.headers[key]}" required>
+                      </td>
+                      <td>
+                        <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </fieldset>
+            <label>
+              REST Payload
+              <textarea id="rest_payload">${init?.restDetails?.payload ?? ''}</textarea>
+            </label>
+            <fieldset>
+              <legend>Output Mapping</legend>
+              <button onclick="${ escapeHTML(`
+                event.preventDefault(); 
+                const tr = document.createElement('tr'); 
+                tr.innerHTML='${`
+                  <td>
+                    <input type="text" placeholder="Key" required>
+                  </td>
+                  <td>
+                    <input type="text" placeholder="Value" required>
+                  </td>
+                  <td>
+                    <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+                  </td>`}';
+                output_mapping_tbody.appendChild(tr);`) }">Add Output Mapping</button>
+              <table>
+                <tbody id="output_mapping_tbody">
+                  ${Object.keys(init?.restDetails?.outputMapping ?? {}).map(key=>`
+                    <tr>
+                      <td>
+                        <input type="text" value="${key}" required>
+                      </td>
+                      <td>
+                        <input type="text" value="${init.restDetails.outputMapping[key]}" required>
+                      </td>
+                      <td>
+                        <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </fieldset>
+          </fieldset>
+        `;
+    };
+  });
+  type.dispatchEvent(new Event('change'));
+  return modal;
+};
+
+addBtn.addEventListener('click', async e=>{
+  e.preventDefault();
+  createFormModal();
+});
+
+testBtn.addEventListener('click', async e=>{
+  e.preventDefault();
+  try {
+    testBtn.disabled = true;
+    body.style.cursor = 'wait';
+    
+    const service = {
+  "id": "",
+  "name": "DEMO Optimization service",
+  "description_short": "The service perform the optimization of robot movements for the DEMO robot code.",
+  "description_long": "very long description as markdown",
+  "sources": "https://www.google.com/",
+  "logo": "",
+  "affiliation": "BOC",
+  "contact": "damiano.falcioni@boc-group.com",
+  "keywords": "test",
+  "_type": "embedded/internal/external",
+  "type": "internal",
+  
+  "_fmu": "{base64encoded}",
+  
+  "container": {
+    "image": "myimage:latest",
+    "internalPort": 8080
+  },
+  
+  "input": {
+    "name": {
+      "_comment": "JSONSchema",
+      "type": "string",
+      "description": "the name"
+    }
+  },
+  "output": {
+    "_comment": "JSONSchema",
+    "type": "object",
+    "description": "my output"
+  },
+  "restDetails": {
+    "_endpoint_comment": "relative URL for internal smart services, absolute URL for external smart services",
+    "endpoint": "https://echo.free.beeceptor.com?name=${name}",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "outputMapping": {
+      "method": "$.method"
+    },
+    "payload": "{ \"number\": 5, \"name\": \"${name}\"}"
+  }
+};
+
+    const mscService = await getMSCService();
+    if (mscService.operations[service.name]) throw new Error('Service already exists. Use another Name.');
+    const mscServiceUpdate = await createMSCService({ service });
+    mscService.operations = Object.assign(mscService.operations, mscServiceUpdate);
+    await updateMSCService({ mscService });
+
+    await uploadService({ service });
+
+    await showServices();
+
+  } catch(err) {
+    console.log(err);
+    msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+  } finally {
+    testBtn.disabled = false;
+    body.style.cursor = 'default';
+  }
+});
+
+await showServices();
+
+function escapeHTML(unsafe) {
+  return unsafe.replace(/[\n\r\t]/gm, '').replace(
+    /[\u0000-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u00FF]/g,
+    c => '&#' + ('000' + c.charCodeAt(0)).slice(-4) + ';'
+  );
+}
+</script>
+</body>
+</html>
