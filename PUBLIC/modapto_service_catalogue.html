@@ -660,8 +660,13 @@ const createFormModal = init=>{
       body.style.cursor = 'wait';
       if (service.type !== 'orchestrated' && service.type !== 'embedded') {
         const mscService = await getMSCService();
-        if (mscService.operations[service.name] && !init?.id) throw new Error('Service already exists. Use another Name.');
+        if (init?.name) {
+          delete mscService.operations[init?.name];
+        }
+        //if (mscService.operations[service.name] && !init?.id) throw new Error('Service already exists. Use another Name.');
+        if (mscService.operations[service.name]) throw new Error('Service already exists. Use another Name.');
         const mscServiceUpdate = await createMSCService({ service });
+        
         mscService.operations = Object.assign(mscService.operations, mscServiceUpdate);
         await updateMSCService({ mscService });
       }
@@ -840,7 +845,7 @@ testBtn.addEventListener('click', async e=>{
     
     const service = {
   "id": "",
-  "name": "DEMO Optimization service",
+  "name": "FFT Optimization service",
   "description_short": "The service perform the optimization of robot movements for the DEMO robot code.",
   "description_long": "very long description as markdown",
   "sources": "https://www.google.com/",
