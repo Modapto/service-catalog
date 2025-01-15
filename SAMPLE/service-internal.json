@@ -1,0 +1,37 @@
+{
+  "id": "SERVICE_CATALOG/_272fcb1e-9447-4dd7-8a88-8c229859fcc7/service.json",
+  "name": "FFT Optimization service",
+  "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
+  "description_long": "...",
+  "sources": "http://127.0.0.1:8080/",
+  "logo": "",
+  "affiliation": "BOC",
+  "contact": "damiano.falcioni@boc-group.com",
+  "keywords": "test",
+  "type": "internal",
+  "input": {
+    "name": {
+      "type": "string",
+      "description": "the name"
+    }
+  },
+  "output": {
+    "type": "object",
+    "description": "my output"
+  },
+  "container": {
+    "image": "myimage:latest",
+    "internalPort": "8080"
+  },
+  "restDetails": {
+    "endpoint": "https://echo.free.beeceptor.com?name=${name}",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "outputMapping": {
+      "method": "$.method"
+    },
+    "payload": "{ \"number\": 5, \"name\": \"${name}\"}"
+  }
+}
