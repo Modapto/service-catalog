@@ -1,6 +1,8 @@
 # MODAPTO Service Catalog
 The project contain for the MODAPTO Service Catalog code
 
+Live version is available at https://services.modapto.atc.gr/catalog/
+
 ## Requirement
 - Orchestrator based on Microservice Controller deployed using [Docker](https://github.com/Modapto/orchestrator)
 -(Optional) GitLab platform with rights to create Groups and Projects.
