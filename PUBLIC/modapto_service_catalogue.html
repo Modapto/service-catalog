@@ -16,7 +16,7 @@
       padding: 10px;
     }
     #gridDiv {
-      justify-content: space-between;
+      justify-content: flex-start;
       display: flex; 
       flex-wrap: wrap;
     }
@@ -67,13 +67,11 @@ Sample result:
     "internalPort": 0
   },
   
-  "input": {
-    "name": {
-      "_comment": "JSONSchema"
-      "type": "string",
-      "description": ""
-    }
-  },
+  "input": [{
+    "modelType": "Property",
+    "idShort": "name",
+    "valueType": "xs:string"
+  }],
   "output": {
     "_comment": "JSONSchema"
     "type": "object",
@@ -202,7 +200,7 @@ const createMSCService = async ({ service }) => ({
     autostart: false,
     configuration: {
       connectorId: 'org.adoxx.microservice.api.connectors.impl.RESTConnector',
-      outputDescription: service.output.description,
+      outputDescription: service.output.description || '',
       outputAdaptationAlgorithm: 'out(output.dataJson ? output.dataJson : output.dataText ? output.dataText : output.dataBase64);',
       statusCheckAlgorithm: '',
       configStart: {
@@ -227,9 +225,9 @@ const createMSCService = async ({ service }) => ({
           value: service.restDetails.payload
         }
       },
-      inputs: Object.keys(service.input).reduce((acc, key)=>({...acc, [key]: {
-        matchingName: `\${${key}}`,
-        description: service.input[key].description,
+      inputs: service.input.reduce((acc, cur)=>({...acc, [cur.idShort]: {
+        matchingName: `\${${cur.idShort}}`,
+        description: cur.idShort.description || '',
         workingExample: ''
       }}), {})
     }
@@ -338,7 +336,7 @@ const createFormModal = init=>{
   <form id="form">
     <label>
       Name
-      <input id="nameEl" type="text" value="${init?.name ?? ''}" required>
+      <input id="nameEl" type="text" pattern="^[a-zA-Z][a-zA-Z0-9_]*$" value="${init?.name ?? ''}" required>
     </label>
     <label>
       Logo
@@ -375,47 +373,27 @@ const createFormModal = init=>{
         const tr = document.createElement('tr');
         tr.innerHTML = '${`
           <td>
-            <input type="text" placeholder="Name" required>
+<textarea placeholder="AAS" rows="6" required>
+{&#13;&#10;
+  "modelType": "Property",&#13;&#10;
+  "idShort": "id",&#13;&#10;
+  "valueType": "xs:string",&#13;&#10;
+  "description": ""&#13;&#10;
+}
+</textarea>
           </td>
-          <td>
-            <select required>
-              <option value="">--Select a Type--</option>
-              <option value="null">Null</option>
-              <option value="boolean">Boolean</option>
-              <option value="object">Object</option>
-              <option value="array">Array</option>
-              <option value="number">Number</option>
-              <option value="string">String</option>
-            </select>
-          </td>
-          <td>
-            <textarea placeholder="Description" rows="1" required></textarea>
-          <td>
+          <td style="text-align: center;">
             <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
           </td>
         `}';
         inputsTbody.appendChild(tr);
       `)}">Add Input</button>
-      <table>
+      <table style="display: table; width: 100%;">
         <tbody id="inputsTbody">
-          ${Object.keys(init?.input ?? {}).map(key=>`
+          ${(init?.input ?? []).map(inp=>`
             <tr>
               <td>
-                <input type="text" value="${key}" required>
-              </td>
-              <td>
-                <select required>
-                  <option value="" ${init.input[key].type == null ? 'selected':''}>--Select a Type--</option>
-                  <option value="null" ${init.input[key].type === 'null' ? 'selected':''}>Null</option>
-                  <option value="boolean" ${init.input[key].type === 'boolean' ? 'selected':''}>Boolean</option>
-                  <option value="object" ${init.input[key].type === 'object' ? 'selected':''}>Object</option>
-                  <option value="array" ${init.input[key].type === 'array' ? 'selected':''}>Array</option>
-                  <option value="number" ${init.input[key].type === 'number' ? 'selected':''}>Number</option>
-                  <option value="string" ${init.input[key].type === 'string' ? 'selected':''}>String</option>
-                </select>
-              </td>
-              <td>
-                <textarea rows="1" required>${init.input[key].description ?? ''}</textarea>
+                <textarea placeholder="AAS" rows="6" required>${JSON.stringify(inp, null, 2)}</textarea>
               </td>
               <td>
                 <span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span>
@@ -428,20 +406,8 @@ const createFormModal = init=>{
     <fieldset>
       <legend>Output</legend>
       <label>
-        Type
-        <select id="outputType" required>
-          <option value="" ${init?.output?.type == null ? 'selected':''}>--Select a Type--</option>
-          <option value="null" ${init?.output?.type === 'null' ? 'selected':''}>Null</option>
-          <option value="boolean" ${init?.output?.type === 'boolean' ? 'selected':''}>Boolean</option>
-          <option value="object" ${init?.output?.type === 'object' ? 'selected':''}>Object</option>
-          <option value="array" ${init?.output?.type === 'array' ? 'selected':''}>Array</option>
-          <option value="number" ${init?.output?.type === 'number' ? 'selected':''}>Number</option>
-          <option value="string" ${init?.output?.type === 'string' ? 'selected':''}>String</option>
-        </select>
-      </label>
-      <label>
-        Description
-        <textarea id="outputDescription" required>${init?.output?.description ?? ''}</textarea>
+        AAS
+        <textarea style="font-size:16px;" id="outputAAS" rows="6" required>${init?.output && init.output[0] ? JSON.stringify(init.output[0], null, 2) : '{&#13;&#10;  "modelType": "Property",&#13;&#10;  "idShort": "result",&#13;&#10;  "valueType": "xs:string"&#13;&#10;}'}</textarea>
     </fieldset>
     <label>
       Type
@@ -603,14 +569,8 @@ const createFormModal = init=>{
       contact: contact.value,
       keywords: keywords.value,
       type: type.value,
-      input: [...inputsTbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: {
-        type: tr.children[1].children[0].value,
-        description: tr.children[2].children[0].value
-      }}), {}),
-      output: {
-        type: outputType.value,
-        description: outputDescription.value
-      }
+      input: [...inputsTbody.children].map(tr=>JSON.parse(tr.children[0].children[0].value)),
+      output: [JSON.parse(outputAAS.value)]
     };
     switch(type.value) {
       case 'orchestrated':
