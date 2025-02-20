@@ -8,7 +8,7 @@ OUTPUT SAMPLE:
   "list": [
     {
       "id": "c821f2eb-d16c-4b06-829a-9a2396872f42",
-      "name": "Prognostics External Service",
+      "name": "Prognostics_External_Service",
       "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
       "logo": "",
       "affiliation": "BOC",
@@ -17,12 +17,12 @@ OUTPUT SAMPLE:
     },
     {
       "id": "3b21dcca-0510-435b-8a75-a7c80747146f",
-      "name": "Prognostics External Service",
+      "name": "Prognostics_Internal_Service",
       "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
       "logo": "",
       "affiliation": "BOC",
       "keywords": "test",
-      "type": "external"
+      "type": "internal"
     }
   ]
 }
@@ -39,9 +39,10 @@ SAMPLE:
 OUTPUT SAMPLE:
 ```
 {
-  "name": "Prognostics External Service",
+  "id": "c821f2eb-d16c-4b06-829a-9a2396872f42",
+  "name": "Prognostics_External_Service",
   "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
-  "description_long": "...",
+  "description_long": "\u003Cp\u003E...\u003C/p\u003E",
   "sources": "http://127.0.0.1:8080/",
   "logo": "",
   "affiliation": "BOC",
