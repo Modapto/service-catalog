@@ -594,7 +594,7 @@ const createFormModal = init=>{
         //service.microservice_operation = microservice_operation.value;
         break;
       case 'embedded':
-        service.fmu = btoa(fmu.value);
+        service.fmu = btoa(new Uint8Array(await fmu.files[0].arrayBuffer()).reduce((acc, cur)=>acc+String.fromCharCode(cur), ''));
         break;
       case 'internal':
         service.container = {
@@ -676,9 +676,15 @@ const createFormModal = init=>{
         typeFormDiv.innerHTML = `
           <label>
             FMU
-            <textarea id="fmu" required>${init?.fmu ? atob(init?.fmu) : ''}</textarea>
+            <input id="fmu" type="file" accept=".zip" required>
           </label>
         `;
+        if (init?.fmu) {
+          const fmuFile = new File([new Uint8Array(atob(init.fmu).split('').map(c=>c.charCodeAt(0)))], "fmu.zip");
+          const dT = new ClipboardEvent("").clipboardData || new DataTransfer();
+          dT.items.add(fmuFile);
+          fmu.files = dT.files;
+        }
         break;
       case 'internal':
         typeFormDiv.innerHTML = `
