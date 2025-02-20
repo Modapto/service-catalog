@@ -7,7 +7,7 @@ OUTPUT SAMPLE:
 {
   "list": [
     {
-      "id": "SERVICE_CATALOG/_c821f2eb-d16c-4b06-829a-9a2396872f42/service.json",
+      "id": "c821f2eb-d16c-4b06-829a-9a2396872f42",
       "name": "Prognostics External Service",
       "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
       "logo": "",
@@ -16,7 +16,7 @@ OUTPUT SAMPLE:
       "type": "external"
     },
     {
-      "id": "SERVICE_CATALOG/_3b21dcca-0510-435b-8a75-a7c80747146f/service.json",
+      "id": "3b21dcca-0510-435b-8a75-a7c80747146f",
       "name": "Prognostics External Service",
       "description_short": "The service perform the optimization of robot movements for the FFT robot code.",
       "logo": "",
@@ -34,7 +34,7 @@ OUTPUT SAMPLE:
 
 SAMPLE:
 
-`GET https://services.modapto.atc.gr/micro-service-controller-rest/rest/msc/callMicroserviceCustomIO/2daf6c38-4579-4929-8d72-4d869c9bcc4e/getService?id=SERVICE_CATALOG/_c821f2eb-d16c-4b06-829a-9a2396872f42/service.json`
+`GET https://services.modapto.atc.gr/micro-service-controller-rest/rest/msc/callMicroserviceCustomIO/2daf6c38-4579-4929-8d72-4d869c9bcc4e/getService?id=c821f2eb-d16c-4b06-829a-9a2396872f42`
 
 OUTPUT SAMPLE:
 ```
