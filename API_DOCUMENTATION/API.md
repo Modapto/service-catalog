@@ -74,7 +74,9 @@ OUTPUT SAMPLE:
       "Content-Type": "application/json"
     },
     "outputMapping": {
-
+      "RUL_prediction": "$.RUL_prediction",
+      "UNIX_timestamp": "$.UNIX_timestamp",
+      "engine_index": "$.engine_index"
     },
     "payload": ""
   }
