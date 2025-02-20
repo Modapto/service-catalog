@@ -108,7 +108,7 @@ const getService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-
   }
 }).then(response=>response.json()).then(response=>response.error?reject(response.error):(response.data.id=id, resolve(response.data))).catch(e=>reject(e)));
 
-const delService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/deleteLocalFile?fileId='+encodeURIComponent(id), {
+const delService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/deleteLocalFile?fileId='+encodeURIComponent('SERVICE_CATALOG/_' + id + '/service.json'), {
   method: 'GET',
   headers: {
     "Content-Type": "application/json",
@@ -122,9 +122,9 @@ const uploadService = ({ service }) => new Promise((resolve, reject)=>fetch(base
   headers: {
     "Content-Type": "application/json",
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.fileId)).catch(e=>reject(e)));
+}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.id)).catch(e=>reject(e)));
 
-const updateService = ({ id, service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateLocalFile?fileId='+encodeURIComponent(id), {
+const updateService = ({ id, service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateLocalFile?fileId='+encodeURIComponent('SERVICE_CATALOG/_' + id + '/service.json'), {
   method: 'POST',
   body: JSON.stringify(service),
   headers: {
@@ -200,7 +200,7 @@ const createMSCService = async ({ service }) => ({
     autostart: false,
     configuration: {
       connectorId: 'org.adoxx.microservice.api.connectors.impl.RESTConnector',
-      outputDescription: service.output.description || '',
+      outputDescription: '',
       outputAdaptationAlgorithm: 'out(output.dataJson ? output.dataJson : output.dataText ? output.dataText : output.dataBase64);',
       statusCheckAlgorithm: '',
       configStart: {
@@ -407,7 +407,7 @@ const createFormModal = init=>{
       <legend>Output</legend>
       <label>
         AAS
-        <textarea style="font-size:16px;" id="outputAAS" rows="6" required>${init?.output && init.output[0] ? JSON.stringify(init.output[0], null, 2) : '{&#13;&#10;  "modelType": "Property",&#13;&#10;  "idShort": "result",&#13;&#10;  "valueType": "xs:string"&#13;&#10;}'}</textarea>
+        <textarea style="font-size:16px;" id="outputAAS" rows="6" required>${init?.output ? JSON.stringify(init.output, null, 2) : '[{&#13;&#10;  "modelType": "Property",&#13;&#10;  "idShort": "result",&#13;&#10;  "valueType": "xs:string"&#13;&#10;}]'}</textarea>
     </fieldset>
     <label>
       Type
@@ -570,7 +570,7 @@ const createFormModal = init=>{
       keywords: keywords.value,
       type: type.value,
       input: [...inputsTbody.children].map(tr=>JSON.parse(tr.children[0].children[0].value)),
-      output: [JSON.parse(outputAAS.value)]
+      output: JSON.parse(outputAAS.value)
     };
     switch(type.value) {
       case 'orchestrated':
