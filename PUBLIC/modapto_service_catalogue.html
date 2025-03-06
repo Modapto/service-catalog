@@ -27,11 +27,37 @@
       width: 100%;
     }
   </style>
+  <script>
+    const auth_url = new URLSearchParams(window.location.search).get('auth_url');
+    if (auth_url) {
+      const client_id = new URLSearchParams(window.location.search).get('client_id');
+      window.location.href = client_id ? `${auth_url}?client_id=${encodeURIComponent(client_id)}&response_type=code&scope=openid&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}` : `${auth_url}&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+    }
+  </script>
+  <script>
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (code) {
+      const token_url = new URLSearchParams(window.location.search).get('token_url');
+      if (!token_url) throw new Error('token_url parameter is missing.');
+      const client_id = new URLSearchParams(window.location.search).get('client_id');
+      if (!client_id) throw new Error('client_id parameter is missing.');
+      const access_token = await fetch(token_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `grant_type=authorization_code&client_id=${encodeURIComponent(client_id)}&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}`
+      }).then(response=>response.json()).then(response=>response.access_token);
+      if (access_token) {
+        window.location.href = `${window.location.origin + window.location.pathname}?access_token=${encodeURIComponent(access_token)}`;
+      }
+    }
+  </script>
   <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
 </head>
 <body id="body">
-<h1 style="text-align: center;">MODAPTO Service Catalogue</h1>
+<h1 style="text-align: center;">Service Catalogue</h1>
 <form>
   <button id="addBtn" type="button">Add new service</button>
   <button id="testBtn" type="button" style="display: none;">TEST</button>
@@ -92,28 +118,35 @@ Sample result:
   }
 }]
 */
+const getURLParameter = sParam => new URLSearchParams(window.location.search).get(sParam);
+
+const access_token = getURLParameter('access_token');
+
 const getServicesList = () => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=getServicesList', {
   method: 'POST',
   body: `{}`,
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.list.sort((a,b)=>a.name.toUpperCase()>b.name.toUpperCase()?1:a.name.toUpperCase()<b.name.toUpperCase()?-1:0))).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve(response.data.list.sort((a,b)=>a.name.toUpperCase()>b.name.toUpperCase()?1:a.name.toUpperCase()<b.name.toUpperCase()?-1:0))).catch(e=>reject(e)));
 
 const getService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=getService', {
   method: 'POST',
   body: JSON.stringify({ id: { value: id } }),
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):(response.data.id=id, resolve(response.data))).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):(response.data.id=id, resolve(response.data))).catch(e=>reject(e)));
 
 const delService = (id) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/deleteLocalFile?fileId='+encodeURIComponent('SERVICE_CATALOG/_' + id + '/service.json'), {
   method: 'GET',
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve()).catch(e=>reject(e)));
 
 
 const uploadService = ({ service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=uploadService', {
@@ -121,31 +154,35 @@ const uploadService = ({ service }) => new Promise((resolve, reject)=>fetch(base
   body: `{ "contentB64": { "value": "${btoa(JSON.stringify(service))}" } }`,
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data.id)).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve(response.data.id)).catch(e=>reject(e)));
 
 const updateService = ({ id, service }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateLocalFile?fileId='+encodeURIComponent('SERVICE_CATALOG/_' + id + '/service.json'), {
   method: 'POST',
   body: JSON.stringify(service),
   headers: {
     "Content-Type": "application/octet-stream",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve()).catch(e=>reject(e)));
 
 const getMSCService = (id) => new Promise((resolve, reject)=>fetch(`${baseUrl}/micro-service-controller-rest/rest/msc/retrieveMicroserviceConfiguration?microserviceId=${id || '566e9cba-18ed-48da-9fd6-7c0a2ec357bd'}`, {
   method: 'GET',
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve(response.data)).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve(response.data)).catch(e=>reject(e)));
 
 const updateMSCService = ({ mscService }) => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/updateMicroservice?microserviceId=566e9cba-18ed-48da-9fd6-7c0a2ec357bd', {
   method: 'POST',
   body: JSON.stringify(mscService),
   headers: {
     "Content-Type": "application/json",
+    "Authorization": access_token ? "Bearer " + access_token : ''
   }
-}).then(response=>response.json()).then(response=>response.error?reject(response.error):resolve()).catch(e=>reject(e)));
+}).then(response=>response.ok?response.json():response.text()).then(response=>typeof response==='string'?reject(response):response.error?reject(response.error):resolve()).catch(e=>reject(e)));
 
 /*
 {
@@ -680,6 +717,7 @@ const createFormModal = init=>{
           </label>
         `;
         if (init?.fmu) {
+          //https://stackoverflow.com/questions/47119426/how-to-set-file-objects-and-length-property-at-filelist-object-where-the-files-a#answer-47172409
           const fmuFile = new File([new Uint8Array(atob(init.fmu).split('').map(c=>c.charCodeAt(0)))], "fmu.zip");
           const dT = new ClipboardEvent("").clipboardData || new DataTransfer();
           dT.items.add(fmuFile);
@@ -874,7 +912,12 @@ testBtn.addEventListener('click', async e=>{
   }
 });
 
-await showServices();
+try{
+  await showServices();
+} catch(err) {
+  console.log(err);
+  msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+}
 
 function escapeHTML(unsafe) {
   return unsafe.replace(/[\n\r\t]/gm, '').replace(
