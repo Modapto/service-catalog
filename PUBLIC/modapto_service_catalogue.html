@@ -36,6 +36,9 @@
     dialog label {
       width: 100%;
     }
+    textarea {
+      resize: vertical;
+    }
   </style>
   <script type="module">
     const auth_url = new URLSearchParams(window.location.search).get('auth_url');
@@ -395,7 +398,7 @@ const createFormModal = init=>{
     </label>
     <label>
       Long Description
-      <textarea id="description_long">${init?.description_long ?? ''}</textarea>
+      <textarea rows="6" id="description_long">${init?.description_long ?? ''}</textarea>
     </label>
     <label>
       Sources
@@ -424,8 +427,7 @@ const createFormModal = init=>{
 {&#13;&#10;
   "modelType": "Property",&#13;&#10;
   "idShort": "id",&#13;&#10;
-  "valueType": "xs:string",&#13;&#10;
-  "description": ""&#13;&#10;
+  "valueType": "xs:string"&#13;&#10;
 }
 </textarea>
           </td>
@@ -454,7 +456,22 @@ const createFormModal = init=>{
       <legend>Output</legend>
       <label>
         AAS
-        <textarea style="font-size:16px;" id="outputAAS" rows="6" required>${init?.output ? JSON.stringify(init.output, null, 2) : '[{&#13;&#10;  "modelType": "Property",&#13;&#10;  "idShort": "result",&#13;&#10;  "valueType": "xs:string"&#13;&#10;}]'}</textarea>
+        <textarea style="font-size:16px;" id="outputAAS" rows="6" required>${init?.output ? JSON.stringify(init.output, null, 2) :
+`[{
+  "modelType": "Property",
+  "idShort": "result",
+  "valueType": "xs:string"
+}, {
+  "modelType": "SubmodelElementCollection",
+  "idShort": "result_json_object",
+  "value": [{
+    "modelType": "Property",
+    "idShort": "sub_result",
+    "valueType": "xs:float"
+  }]
+}]`
+}
+        </textarea>
     </fieldset>
     <label>
       Type
