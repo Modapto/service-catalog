@@ -39,6 +39,9 @@
     textarea {
       resize: vertical;
     }
+    header {
+      word-wrap: break-word;
+    }
   </style>
   <script type="module">
     const auth_url = new URLSearchParams(window.location.search).get('auth_url');
@@ -133,7 +136,12 @@ Sample result:
 */
 const getURLParameter = sParam => new URLSearchParams(window.location.search).get(sParam);
 
-const access_token = getURLParameter('access_token');
+let access_token = getURLParameter('access_token');
+
+window.addEventListener('message', async e => {
+  access_token = e.data;
+  await main();
+}, false);
 
 const getServicesList = () => new Promise((resolve, reject)=>fetch(baseUrl+'/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=2daf6c38-4579-4929-8d72-4d869c9bcc4e&operationId=getServicesList', {
   method: 'POST',
@@ -939,11 +947,13 @@ testBtn.addEventListener('click', async e=>{
   }
 });
 
-try{
-  await showServices();
-} catch(err) {
-  console.log(err);
-  msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+async function main() {
+  try{
+    await showServices();
+  } catch(err) {
+    console.log(err);
+    msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+  }
 }
 
 function escapeHTML(unsafe) {
@@ -952,6 +962,8 @@ function escapeHTML(unsafe) {
     c => '&#' + ('000' + c.charCodeAt(0)).slice(-4) + ';'
   );
 }
+
+await main();
 </script>
 </body>
 </html>
