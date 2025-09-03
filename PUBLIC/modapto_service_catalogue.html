@@ -139,7 +139,7 @@ const getURLParameter = sParam => new URLSearchParams(window.location.search).ge
 let access_token = getURLParameter('access_token');
 
 window.addEventListener('message', async e => {
-  access_token = e.data;
+  access_token = e.data.serviceToken;
   await main();
 }, false);
 
