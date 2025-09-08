@@ -138,7 +138,8 @@ Sample result:
 const getURLParameter = sParam => new URLSearchParams(window.location.search).get(sParam);
 
 let access_token = getURLParameter('access_token');
-
+if(window.parent)
+  window.parent.postMessage({ type: 'REQUEST_TOKENS' }, '*');
 window.addEventListener('message', async e => {
   access_token = e.data.serviceToken;
   await main();
