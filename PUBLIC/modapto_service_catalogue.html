@@ -366,6 +366,7 @@ const createDetailsModal = service=>{
       <b>Contact:</b> ${service.contact}<br>
       <b>Sources:</b> <a href="${service.sources}" target="_blank">${service.sources}</a><br>
       <b>Keywords:</b> ${service.keywords}<br>
+      <b>ID:</b> ${service.id}<br>
       <b>Inputs:</b> ${Object.keys(service.input).map(key=>`${key} (${service.input[key].type})`).join(', ')}<br>
       <b>Output:</b> ${service.output.type} - ${service.output.description}<br>
     </small>
