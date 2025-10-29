@@ -124,6 +124,7 @@ Sample result:
     "_endpoint_comment": "relative URL for internal smart services, absolute URL for external smart services",
     "endpoint": "http://example.org:8080/root/my-service/?name=${name}",
     "method": "GET|POST|PUT|DELETE",
+    "httpVersion": "1.1/2/3.."
     "headers": {
       "Content-Type": "..."
     },
@@ -303,7 +304,7 @@ const showServices = async () => {
   services.forEach((service, i)=>{
     const article = document.createElement('article');
     article.title = service.description_short;
-    article.innerHTML = `
+    article.innerHTML = /*html*/`
       <header style="text-align: center;"><span id="del_${i}" style="cursor:pointer; float: left;" title="Delete">🗑</span><span id="edit_${i}" style="cursor:pointer; float: left;" title="Edit">⚙</span><b>${service.name}</b></header>
       <div style="text-align: center;">${service.logo ? `<img loading="lazy" src="${service.logo}">`: `<!-- <img loading="lazy" src="https://git.boc-group.eu/uploads/-/system/project/avatar/400/AI.jpg"> --> ${defaultIconSvg}`}</div>
       <p>${service.description_short.length < 100 ? service.description_short : service.description_short.substring(0, 100).concat('...')}</p>
@@ -317,7 +318,7 @@ const showServices = async () => {
         createFormModal(serviceFull);
       } catch(err) {
         console.log(err);
-        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+        msgDiv.innerHTML = /*html*/`<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
       }
     });
     document.getElementById(`del_${i}`).addEventListener('click', async e=>{
@@ -334,7 +335,7 @@ const showServices = async () => {
         await showServices();
       } catch(err) {
         console.log(err);
-        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+        msgDiv.innerHTML = /*html*/`<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
       }
     });
 
@@ -346,7 +347,7 @@ const showServices = async () => {
         createDetailsModal(serviceFull);
       } catch(err) {
         console.log(err);
-        msgDiv.innerHTML = `<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
+        msgDiv.innerHTML = /*html*/`<div class="flash danger"><sup><span onclick="this.parentElement.parentElement.remove();" style="cursor:pointer;">✖</span></sup> Error: ${err}</div>`;
       }
     });
   });
@@ -354,11 +355,11 @@ const showServices = async () => {
 
 const createDetailsModal = service=>{
   const modal = document.createElement('dialog');
-  modal.innerHTML = `
+  modal.innerHTML = /*html*/`
   <header>
     <h2>${service.name}</h2>
   </header>
-  <div style="float: right">${service.logo ? `<img loading="lazy" src="${service.logo}">`: defaultIconSvg}</div>
+  <div style="float: right">${service.logo ? /*html*/`<img loading="lazy" src="${service.logo}">`: defaultIconSvg}</div>
   <p>
     <small>
       <b>Type:</b> ${service.type}<br>
@@ -374,7 +375,7 @@ const createDetailsModal = service=>{
   ${service.description_long}
   <footer>
     <form method="dialog">
-      <button type="reset" onclick="${ escapeHTML(`
+      <button type="reset" onclick="${ escapeHTML(/*js*/`
         event.preventDefault();
         this.parentElement.parentElement.parentElement.remove();
       `) }">Close</button>
@@ -654,11 +655,21 @@ const createFormModal = init=>{
           const mscService = await getMSCService(microservice_id.value);
           console.log(mscService);
           if (!mscService.operations[microservice_operation.value]) throw new Error(`Operation ${microservice_operation.value} not found.`);
+
+          const outputMapping = {};
+          for (const outputAAS of service.output) {
+            outputMapping[outputAAS.idShort] = '$.' + outputAAS.idShort;
+          }
+          let orchestratorEndpoint = window.location.href.substring(0, window.location.href.split('?')[0].lastIndexOf("/"));
+          if (window.frameElement) {
+            orchestratorEndpoint = window.frameElement.src.substring(0, window.frameElement.src.split('?')[0].lastIndexOf("/"));
+          }
+
           service.restDetails = {
-            endpoint: `${baseUrl}/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=${microservice_id.value}&operationId=${microservice_operation.value}`,
+            endpoint: `${orchestratorEndpoint}/rest/msc/callMicroserviceForced?microserviceId=${microservice_id.value}&operationId=${microservice_operation.value}`,
             method: 'POST',
-            headers: {},
-            outputMapping: {},
+            headers: { 'content-type': 'application/json'},
+            outputMapping: outputMapping,
             payload: JSON.stringify(Object.keys(mscService.operations[microservice_operation.value].configuration.inputs).reduce((acc, key)=>({...acc, [key]: { value: '${'+key+'}'}}), {}))
           };
         } catch(err) {
@@ -680,6 +691,7 @@ const createFormModal = init=>{
         service.restDetails = {
           endpoint: rest_endpoint.value,
           method: rest_method.value,
+          httpVersion: http_version.value,
           headers: [...rest_headers_tbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: tr.children[1].children[0].value}), {}),
           outputMapping: [...output_mapping_tbody.children].reduce((acc, tr)=>({...acc, [tr.children[0].children[0].value]: tr.children[1].children[0].value}), {}),
           payload: rest_payload.value
@@ -792,6 +804,14 @@ const createFormModal = init=>{
                 <option value="POST" ${init?.restDetails?.method === 'POST' ? 'selected':''}>POST</option>
                 <option value="PUT" ${init?.restDetails?.method === 'PUT' ? 'selected':''}>PUT</option>
                 <option value="DELETE" ${init?.restDetails?.method === 'DELETE' ? 'selected':''}>DELETE</option>
+              </select>
+            </label>
+            <label style="display:none;">
+              HTTP Version
+              <select id="http_version">
+                <option value="" ${init?.restDetails?.httpVersion == null ? 'selected':''}>--Select the HTTP Version (optional)--</option>
+                <option value="1.1" ${init?.restDetails?.httpVersion === '1.1' ? 'selected':''}>HTTP1.1</option>
+                <option value="2" ${init?.restDetails?.httpVersion === '2' ? 'selected':''}>HTTP2</option>
               </select>
             </label>
             <fieldset>
