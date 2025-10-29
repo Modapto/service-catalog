@@ -660,13 +660,10 @@ const createFormModal = init=>{
           for (const outputAAS of service.output) {
             outputMapping[outputAAS.idShort] = '$.' + outputAAS.idShort;
           }
-          let orchestratorEndpoint = window.location.href.substring(0, window.location.href.split('?')[0].lastIndexOf("/"));
-          if (window.frameElement) {
-            orchestratorEndpoint = window.frameElement.src.substring(0, window.frameElement.src.split('?')[0].lastIndexOf("/"));
-          }
+          const orchestratorEndpoint = new URL(window.frameElement?window.frameElement.src:window.location.href).origin;//window.location.href.substring(0, window.location.href.split('?')[0].lastIndexOf("/"));
 
           service.restDetails = {
-            endpoint: `${orchestratorEndpoint}/rest/msc/callMicroserviceForced?microserviceId=${microservice_id.value}&operationId=${microservice_operation.value}`,
+            endpoint: `${orchestratorEndpoint}/micro-service-controller-rest/rest/msc/callMicroserviceForced?microserviceId=${microservice_id.value}&operationId=${microservice_operation.value}`,
             method: 'POST',
             headers: { 'content-type': 'application/json'},
             outputMapping: outputMapping,
