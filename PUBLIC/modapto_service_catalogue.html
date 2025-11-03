@@ -769,6 +769,7 @@ const createFormModal = init=>{
           const dT = new ClipboardEvent("").clipboardData || new DataTransfer();
           dT.items.add(fmuFile);
           fmu.files = dT.files;
+          typeFormDiv.innerHTML += `<a href="${URL.createObjectURL(new Blob([fmuFile]))}" download="fmu.zip">Download FMU</a>`;
         }
         break;
       case 'internal':
