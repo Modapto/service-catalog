@@ -762,6 +762,7 @@ const createFormModal = init=>{
             FMU
             <input id="fmu" type="file" accept=".zip" required>
           </label>
+          <a id="downloadFmu" href="" download="fmu.zip" style="display:none;">Download FMU</a>
         `;
         if (init?.fmu) {
           //https://stackoverflow.com/questions/47119426/how-to-set-file-objects-and-length-property-at-filelist-object-where-the-files-a#answer-47172409
@@ -769,7 +770,9 @@ const createFormModal = init=>{
           const dT = new ClipboardEvent("").clipboardData || new DataTransfer();
           dT.items.add(fmuFile);
           fmu.files = dT.files;
-          //typeFormDiv.innerHTML += `<a href="${URL.createObjectURL(new Blob([new File([new Uint8Array(atob(init.fmu).split('').map(c=>c.charCodeAt(0)))], "fmu2.zip")]))}" download="fmu2.zip">Download FMU</a>`;
+          //downloadFmu.href = `<a href="data:application/octet-stream;base64,${init.fmu}" download="fmu.zip">Download FMU</a>`;
+          downloadFmu.href = URL.createObjectURL(new Blob([fmuFile]));
+          downloadFmu.style.display = '';
         }
         break;
       case 'internal':
